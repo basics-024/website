@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireSuper Arcade</title>
+
+    <!-- Chessboard CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121214;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Loading Popup Screen */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0d0d0e;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease;
+        }
+
+        .loader-title {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #ff5500;
+            margin-bottom: 20px;
+            animation: pulse 1.5s infinite;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 85, 0, 0.2);
+            border-top: 4px solid #ff5500;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        /* Navigation Bar */
+        header {
+            background-color: #1e1e24;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #ff5500;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ff5500;
+        }
+
+        nav button {
+            background: none;
+            border: none;
+            color: #ccc;
+            font-size: 1rem;
+            margin-left: 20px;
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s, color 0.2s;
+        }
+
+        nav button:hover, nav button.active {
+            color: #fff;
+            background-color: #2a2a32;
+        }
+
+        /* Main App Container */
+        main {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .view {
+            display: none;
+            width: 100%;
+            max-width: 900px;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        /* Home View Styling */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #1e1e24;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid #2a2a32;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #ff5500;
+        }
+
+        .card h3 {
+            margin-bottom: 10px;
+            color: #ff5500;
+        }
+
+        /* Button Styling */
+        .btn {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #ffffff;
+            background-color: #ff5500;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background-color: #e04b00;
+        }
+
+        /* Game Containers */
+        #chess-board {
+            width: 400px;
+            max-width: 90vw;
+            margin-bottom: 15px;
+        }
+
+        /* Tic Tac Toe Grid */
+        .ttt-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-gap: 5px;
+            margin-top: 15px;
+        }
+
+        .ttt-cell {
+            width: 100px;
+            height: 100px;
+            background-color: #2a2a32;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .ttt-cell:hover {
+            background-color: #3a3a45;
+        }
+
+        /* Snake Canvas */
+        canvas {
+            background-color: #000;
+            border: 2px solid #ff5500;
+            margin-top: 15px;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 15px;
+            background-color: #1e1e24;
+            color: #777;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Initial Loading Screen -->
+    <div id="loading-screen">
+        <div class="loader-title">Made by FireSuper</div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Website Header -->
+    <header>
+        <div class="logo">FireSuper Arcade</div>
+        <nav>
+            <button class="nav-btn active" onclick="switchView('home')">Home</button>
+            <button class="nav-btn" onclick="switchView('chess')">Chess</button>
+            <button class="nav-btn" onclick="switchView('tictactoe')">Tic-Tac-Toe</button>
+            <button class="nav-btn" onclick="switchView('snake')">Snake</button>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+        <!-- Home View -->
+        <div id="view-home" class="view active">
+            <h2>Select a Game</h2>
+            <div class="grid">
+                <div class="card" onclick="switchView('chess')">
+                    <h3>Chess</h3>
+                    <p>Play chess against a basic computer opponent.</p>
+                </div>
+                <div class="card" onclick="switchView('tictactoe')">
+                    <h3>Tic-Tac-Toe</h3>
+                    <p>Classic 2-player grid game.</p>
+                </div>
+                <div class="card" onclick="switchView('snake')">
+                    <h3>Snake</h3>
+                    <p>Control the snake and collect the food.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chess View -->
+        <div id="view-chess" class="view">
+            <h2>Chess vs AI</h2>
+            <div id="chess-board"></div>
+            <div id="chess-status">Status: White's turn</div>
+            <button class="btn" onclick="resetChess()">Reset Game</button>
+        </div>
+
+        <!-- Tic-Tac-Toe View -->
+        <div id="view-tictactoe" class="view">
+            <h2>Tic-Tac-Toe</h2>
+            <div class="ttt-grid">
+                <div class="ttt-cell" onclick="makeTTTMove(this, 0)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 1)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 2)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 3)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 4)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 5)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 6)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 7)"></div>
+                <div class="ttt-cell" onclick="makeTTTMove(this, 8)"></div>
+            </div>
+            <div id="ttt-status" style="margin-top: 15px;">Player X's Turn</div>
+            <button class="btn" onclick="resetTTT()">Reset Game</button>
+        </div>
+
+        <!-- Snake View -->
+        <div id="view-snake" class="view">
+            <h2>Snake</h2>
+            <canvas id="snakeCanvas" width="400" height="400"></canvas>
+            <div id="snake-score" style="margin-top: 10px;">Score: 0</div>
+            <button class="btn" onclick="startSnake()">Start / Restart</button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        &copy; FireSuper Arcade. Built with vanilla HTML/CSS/JS.
+    </footer>
+
+    <!-- Dependency Libraries for Chess -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+    <script>
+        // --- 1. Loading Screen Logic ---
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const loader = document.getElementById('loading-screen');
+                loader.style.opacity = '0';
+                setTimeout(() => {
+                    loader.style.display = 'none';
+                }, 500);
+            }, 2000); // Displays for 2 seconds
+        });
+
+        // --- 2. View Navigation Logic ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            document.getElementById('view-' + viewName).classList.add('active');
+
+            // Update nav active button
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                if (btn.textContent.toLowerCase().replace('-', '') === viewName.replace('-', '')) {
+                    btn.classList.add('active');
+                }
+            });
+
+            // Initialize chess board width when entering view
+            if (viewName === 'chess' && chessBoard) {
+                chessBoard.resize();
+            }
+        }
+
+        // --- 3. Chess Logic ---
+        let chessBoard = null;
+        let chessGame = new Chess();
+
+        function initChess() {
+            function onDragStart(source, piece) {
+                if (chessGame.game_over()) return false;
+                if ((chessGame.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                    (chessGame.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                    return false;
+                }
+            }
+
+            function makeBotMove() {
+                const moves = chessGame.moves();
+                if (moves.length === 0) return;
+                const randomMove = moves[Math.floor(Math.random() * moves.length)];
+                chessGame.move(randomMove);
+                chessBoard.position(chessGame.fen());
+                updateChessStatus();
+            }
+
+            function onDrop(source, target) {
+                const move = chessGame.move({
+                    from: source,
+                    to: target,
+                    promotion: 'q'
+                });
+
+                if (move === null) return 'snapback';
+                updateChessStatus();
+                window.setTimeout(makeBotMove, 250);
+            }
+
+            function onSnapEnd() {
+                chessBoard.position(chessGame.fen());
+            }
+
+            function updateChessStatus() {
+                let status = '';
+                let moveColor = chessGame.turn() === 'w' ? 'White' : 'Black';
+
+                if (chessGame.in_checkmate()) {
+                    status = 'Game over, ' + moveColor + ' is in checkmate.';
+                } else if (chessGame.in_draw()) {
+                    status = 'Game over, draw.';
+                } else {
+                    status = moveColor + ' to move';
+                    if (chessGame.in_check()) status += ', in check';
+                }
+                document.getElementById('chess-status').innerText = status;
+            }
+
+            chessBoard = Chessboard('chess-board', {
+                draggable: true,
+                position: 'start',
+                onDragStart: onDragStart,
+                onDrop: onDrop,
+                onSnapEnd: onSnapEnd
+            });
+
+            updateChessStatus();
+        }
+
+        function resetChess() {
+            chessGame.reset();
+            chessBoard.start();
+            document.getElementById('chess-status').innerText = "Status: White's turn";
+        }
+
+        // --- 4. Tic-Tac-Toe Logic ---
+        let tttBoard = ['', '', '', '', '', '', '', '', ''];
+        let tttPlayer = 'X';
+        let tttActive = true;
+
+        const winningCombos = [
+            [0,1,2], [3,4,5], [6,7,8],
+            [0,3,6], [1,4,7], [2,5,8],
+            [0,4,8], [2,4,6]
+        ];
+
+        function makeTTTMove(cell, index) {
+            if (tttBoard[index] !== '' || !tttActive) return;
+
+            tttBoard[index] = tttPlayer;
+            cell.innerText = tttPlayer;
+
+            if (checkTTTWin()) {
+                document.getElementById('ttt-status').innerText = `Player ${tttPlayer} Wins!`;
+                tttActive = false;
+                return;
+            }
+
+            if (!tttBoard.includes('')) {
+                document.getElementById('ttt-status').innerText = "It's a Draw!";
+                tttActive = false;
+                return;
+            }
+
+            tttPlayer = tttPlayer === 'X' ? 'O' : 'X';
+            document.getElementById('ttt-status').innerText = `Player ${tttPlayer}'s Turn`;
+        }
+
+        function checkTTTWin() {
+            return winningCombos.some(combo => {
+                return combo.every(index => tttBoard[index] === tttPlayer);
+            });
+        }
+
+        function resetTTT() {
+            tttBoard = ['', '', '', '', '', '', '', '', ''];
+            tttPlayer = 'X';
+            tttActive = true;
+            document.getElementById('ttt-status').innerText = "Player X's Turn";
+            document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
+        }
+
+        // --- 5. Snake Logic ---
+        const canvas = document.getElementById('snakeCanvas');
+        const ctx = canvas.getContext('2d');
+        const grid = 20;
+        let snakeLoop = null;
+        let snake = [{x: 160, y: 160}];
+        let dx = grid;
+        let dy = 0;
+        let food = {x: 300, y: 300};
+        let score = 0;
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowUp' && dy === 0) { dx = 0; dy = -grid; }
+            if (e.key === 'ArrowDown' && dy === 0) { dx = 0; dy = grid; }
+            if (e.key === 'ArrowLeft' && dx === 0) { dx = -grid; dy = 0; }
+            if (e.key === 'ArrowRight' && dx === 0) { dx = grid; dy = 0; }
+        });
+
+        function startSnake() {
+            clearInterval(snakeLoop);
+            snake = [{x: 160, y: 160}, {x: 140, y: 160}];
+            dx = grid;
+            dy = 0;
+            score = 0;
+            document.getElementById('snake-score').innerText = "Score: " + score;
+            spawnFood();
+            snakeLoop = setInterval(updateSnake, 100);
+        }
+
+        function spawnFood() {
+            food.x = Math.floor(Math.random() * (canvas.width / grid)) * grid;
+            food.y = Math.floor(Math.random() * (canvas.height / grid)) * grid;
+        }
+
+        function updateSnake() {
+            const head = {x: snake[0].x + dx, y: snake[0].y + dy};
+
+            // Wall Collision Check
+            if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+                gameOverSnake();
+                return;
+            }
+
+            // Self Collision Check
+            for (let i = 0; i < snake.length; i++) {
+                if (head.x === snake[i].x && head.y === snake[i].y) {
+                    gameOverSnake();
+                    return;
+                }
+            }
+
+            snake.unshift(head);
+
+            // Food Collision
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                document.getElementById('snake-score').innerText = "Score: " + score;
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            drawSnake();
+        }
+
+        function drawSnake() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Snake
+            ctx.fillStyle = '#ff5500';
+            snake.forEach(part => ctx.fillRect(part.x, part.y, grid - 2, grid - 2));
+
+            // Draw Food
+            ctx.fillStyle = '#00ffcc';
+            ctx.fillRect(food.x, food.y, grid - 2, grid - 2);
+        }
+
+        function gameOverSnake() {
+            clearInterval(snakeLoop);
+            alert("Game Over! Score: " + score);
+        }
+
+        // Initialize Chess setup on page load
+        $(document).ready(function() {
+            initChess();
+        });
+    </script>
+</body>
+</html>
