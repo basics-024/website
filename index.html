@@ -177,7 +177,7 @@
             background-color: #e04b00;
         }
 
-        /* Chess Container Fixes */
+        /* Chess Board Frame */
         #chess-board {
             width: 400px;
             max-width: 90vw;
@@ -209,17 +209,17 @@
             background-color: #3a3a45;
         }
 
-        /* Canvas for Games */
+        /* Canvas Games */
         canvas {
             background-color: #000;
             border: 2px solid #ff5500;
             margin-top: 15px;
         }
 
-        /* External Open Source Game Frame Container */
+        /* External Web Game Frame */
         .game-frame {
             width: 100%;
-            height: 600px;
+            height: 650px;
             border: 2px solid #ff5500;
             border-radius: 8px;
             background-color: #000;
@@ -250,9 +250,11 @@
         <nav>
             <button class="nav-btn active" onclick="switchView('home')">Home</button>
             <button class="nav-btn" onclick="switchView('chess')">Chess</button>
+            <button class="nav-btn" onclick="switchView('hextris')">Hextris</button>
+            <button class="nav-btn" onclick="switchView('clumsy')">Clumsy Bird</button>
             <button class="nav-btn" onclick="switchView('snake')">Snake</button>
-            <button class="nav-btn" onclick="switchView('tictactoe')">Tic-Tac-Toe</button>
             <button class="nav-btn" onclick="switchView('game2048')">2048</button>
+            <button class="nav-btn" onclick="switchView('tictactoe')">Tic-Tac-Toe</button>
         </nav>
     </header>
 
@@ -260,23 +262,31 @@
     <main>
         <!-- Home Page View -->
         <div id="view-home" class="view active">
-            <h2>Select a Game to Play</h2>
+            <h2>Select a Game</h2>
             <div class="grid">
                 <div class="card" onclick="switchView('chess')">
                     <h3>Chess</h3>
-                    <p>Play against an AI opponent directly on the board.</p>
+                    <p>Play chess against a computer bot.</p>
+                </div>
+                <div class="card" onclick="switchView('hextris')">
+                    <h3>Hextris</h3>
+                    <p>Fast-paced hexagonal puzzle game.</p>
+                </div>
+                <div class="card" onclick="switchView('clumsy')">
+                    <h3>Clumsy Bird</h3>
+                    <p>Flappy bird clone built in JavaScript.</p>
                 </div>
                 <div class="card" onclick="switchView('snake')">
-                    <h3>Google Snake</h3>
-                    <p>Classic snake game with score tracking.</p>
-                </div>
-                <div class="card" onclick="switchView('tictactoe')">
-                    <h3>Tic-Tac-Toe</h3>
-                    <p>Standard 2-player grid game.</p>
+                    <h3>Snake</h3>
+                    <p>Classic arcade snake game.</p>
                 </div>
                 <div class="card" onclick="switchView('game2048')">
                     <h3>2048</h3>
-                    <p>Open-source number merging puzzle game.</p>
+                    <p>Open-source number sliding game.</p>
+                </div>
+                <div class="card" onclick="switchView('tictactoe')">
+                    <h3>Tic-Tac-Toe</h3>
+                    <p>2-player local grid game.</p>
                 </div>
             </div>
         </div>
@@ -289,12 +299,30 @@
             <button class="btn" onclick="resetChess()">Reset Game</button>
         </div>
 
+        <!-- Hextris View -->
+        <div id="view-hextris" class="view">
+            <h2>Hextris</h2>
+            <iframe class="game-frame" src="https://hextris.io/" title="Hextris Game"></iframe>
+        </div>
+
+        <!-- Clumsy Bird View -->
+        <div id="view-clumsy" class="view">
+            <h2>Clumsy Bird</h2>
+            <iframe class="game-frame" src="https://ellisonleao.github.io/clumsy-bird/" title="Clumsy Bird Game"></iframe>
+        </div>
+
         <!-- Snake View -->
         <div id="view-snake" class="view">
             <h2>Snake Game</h2>
             <canvas id="snakeCanvas" width="400" height="400"></canvas>
             <div id="snake-score" style="margin-top: 10px;">Score: 0</div>
             <button class="btn" onclick="startSnake()">Start / Restart</button>
+        </div>
+
+        <!-- 2048 View -->
+        <div id="view-game2048" class="view">
+            <h2>2048</h2>
+            <iframe class="game-frame" src="https://play2048.co/" title="2048 Game"></iframe>
         </div>
 
         <!-- Tic Tac Toe View -->
@@ -313,12 +341,6 @@
             </div>
             <div id="ttt-status" style="margin-top: 15px;">Player X's Turn</div>
             <button class="btn" onclick="resetTTT()">Reset Game</button>
-        </div>
-
-        <!-- Open Source 2048 Game View -->
-        <div id="view-game2048" class="view">
-            <h2>2048 Puzzle Game</h2>
-            <iframe class="game-frame" src="https://play2048.co/" title="2048 Game"></iframe>
         </div>
     </main>
 
@@ -363,7 +385,7 @@
             }
         }
 
-        // --- 3. Chess Engine Logic with CDN Fix ---
+        // --- 3. Chess Logic with Image Theme ---
         let chessBoard = null;
         let chessGame = new Chess();
 
@@ -416,7 +438,6 @@
                 document.getElementById('chess-status').innerText = status;
             }
 
-            // Fixed CDN Piece Theme configuration:
             chessBoard = Chessboard('chess-board', {
                 draggable: true,
                 position: 'start',
