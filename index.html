@@ -22,6 +22,7 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         /* Loading Screen Popup */
@@ -105,7 +106,7 @@
             background-color: #ff5500;
         }
 
-        /* Main Body Area */
+        /* Main View Container */
         main {
             flex: 1;
             padding: 30px;
@@ -209,21 +210,12 @@
             background-color: #3a3a45;
         }
 
-        /* Canvas Games */
+        /* Canvas Displays */
         canvas {
-            background-color: #000;
             border: 2px solid #ff5500;
+            border-radius: 6px;
             margin-top: 15px;
-        }
-
-        /* External Web Game Frame */
-        .game-frame {
-            width: 100%;
-            height: 650px;
-            border: 2px solid #ff5500;
-            border-radius: 8px;
-            background-color: #000;
-            margin-top: 15px;
+            background-color: #70c5ce; /* Flappy bird sky blue */
         }
 
         /* Footer */
@@ -238,57 +230,55 @@
 </head>
 <body>
 
-    <!-- Loading Screen Popup -->
+    <!-- Loading Screen Overlay -->
     <div id="loading-screen">
         <div class="loader-title">Made by FireSuper</div>
         <div class="spinner"></div>
     </div>
 
-    <!-- Navigation Header -->
+    <!-- Website Header -->
     <header>
         <div class="logo">FireSuper Arcade</div>
         <nav>
             <button class="nav-btn active" onclick="switchView('home')">Home</button>
+            <button class="nav-btn" onclick="switchView('flappy')">Flappy Bird</button>
             <button class="nav-btn" onclick="switchView('chess')">Chess</button>
-            <button class="nav-btn" onclick="switchView('hextris')">Hextris</button>
-            <button class="nav-btn" onclick="switchView('clumsy')">Clumsy Bird</button>
             <button class="nav-btn" onclick="switchView('snake')">Snake</button>
-            <button class="nav-btn" onclick="switchView('game2048')">2048</button>
             <button class="nav-btn" onclick="switchView('tictactoe')">Tic-Tac-Toe</button>
         </nav>
     </header>
 
-    <!-- Main Container -->
+    <!-- Main Arcade Area -->
     <main>
         <!-- Home Page View -->
         <div id="view-home" class="view active">
             <h2>Select a Game</h2>
             <div class="grid">
+                <div class="card" onclick="switchView('flappy')">
+                    <h3>Flappy Bird</h3>
+                    <p>Classic flappy bird with physics, pipes, and score counter.</p>
+                </div>
                 <div class="card" onclick="switchView('chess')">
                     <h3>Chess</h3>
                     <p>Play chess against a computer bot.</p>
                 </div>
-                <div class="card" onclick="switchView('hextris')">
-                    <h3>Hextris</h3>
-                    <p>Fast-paced hexagonal puzzle game.</p>
-                </div>
-                <div class="card" onclick="switchView('clumsy')">
-                    <h3>Clumsy Bird</h3>
-                    <p>Flappy bird clone built in JavaScript.</p>
-                </div>
                 <div class="card" onclick="switchView('snake')">
                     <h3>Snake</h3>
                     <p>Classic arcade snake game.</p>
-                </div>
-                <div class="card" onclick="switchView('game2048')">
-                    <h3>2048</h3>
-                    <p>Open-source number sliding game.</p>
                 </div>
                 <div class="card" onclick="switchView('tictactoe')">
                     <h3>Tic-Tac-Toe</h3>
                     <p>2-player local grid game.</p>
                 </div>
             </div>
+        </div>
+
+        <!-- Flappy Bird View -->
+        <div id="view-flappy" class="view">
+            <h2>Flappy Bird</h2>
+            <canvas id="flappyCanvas" width="320" height="480"></canvas>
+            <p style="margin-top: 10px; font-size: 0.9rem; color: #aaa;">Press <strong>SPACE</strong> or <strong>CLICK</strong> on canvas to flap.</p>
+            <button class="btn" onclick="restartFlappy()">Restart Game</button>
         </div>
 
         <!-- Chess View -->
@@ -299,30 +289,12 @@
             <button class="btn" onclick="resetChess()">Reset Game</button>
         </div>
 
-        <!-- Hextris View -->
-        <div id="view-hextris" class="view">
-            <h2>Hextris</h2>
-            <iframe class="game-frame" src="https://hextris.io/" title="Hextris Game"></iframe>
-        </div>
-
-        <!-- Clumsy Bird View -->
-        <div id="view-clumsy" class="view">
-            <h2>Clumsy Bird</h2>
-            <iframe class="game-frame" src="https://ellisonleao.github.io/clumsy-bird/" title="Clumsy Bird Game"></iframe>
-        </div>
-
         <!-- Snake View -->
         <div id="view-snake" class="view">
             <h2>Snake Game</h2>
-            <canvas id="snakeCanvas" width="400" height="400"></canvas>
+            <canvas id="snakeCanvas" width="400" height="400" style="background-color: #000;"></canvas>
             <div id="snake-score" style="margin-top: 10px;">Score: 0</div>
             <button class="btn" onclick="startSnake()">Start / Restart</button>
-        </div>
-
-        <!-- 2048 View -->
-        <div id="view-game2048" class="view">
-            <h2>2048</h2>
-            <iframe class="game-frame" src="https://play2048.co/" title="2048 Game"></iframe>
         </div>
 
         <!-- Tic Tac Toe View -->
@@ -346,7 +318,7 @@
 
     <!-- Footer -->
     <footer>
-        &copy; FireSuper Arcade. Open-Source Web Games.
+        &copy; FireSuper Arcade. Native JavaScript Arcade Engine.
     </footer>
 
     <!-- Dependency Libraries for Chess -->
@@ -355,7 +327,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
 
     <script>
-        // --- 1. Loading Screen Popup ---
+        // --- 1. Loading Screen ---
         window.addEventListener('load', () => {
             setTimeout(() => {
                 const loader = document.getElementById('loading-screen');
@@ -383,9 +355,176 @@
             if (viewName === 'chess' && chessBoard) {
                 chessBoard.resize();
             }
+
+            if (viewName === 'flappy') {
+                restartFlappy();
+            }
         }
 
-        // --- 3. Chess Logic with Image Theme ---
+        // --- 3. Native Flappy Bird Logic (No Audio) ---
+        const fCanvas = document.getElementById('flappyCanvas');
+        const fCtx = fCanvas.getContext('2d');
+
+        let bird = { x: 50, y: 150, radius: 12, velocity: 0, gravity: 0.25, jump: -4.6 };
+        let pipes = [];
+        let fFrame = 0;
+        let fScore = 0;
+        let fGameOver = false;
+        let fAnimationId = null;
+
+        function flap() {
+            if (fGameOver) {
+                restartFlappy();
+            } else {
+                bird.velocity = bird.jump;
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && document.getElementById('view-flappy').classList.contains('active')) {
+                e.preventDefault();
+                flap();
+            }
+        });
+
+        fCanvas.addEventListener('click', flap);
+
+        function restartFlappy() {
+            bird.y = 150;
+            bird.velocity = 0;
+            pipes = [];
+            fFrame = 0;
+            fScore = 0;
+            fGameOver = false;
+            if (fAnimationId) cancelAnimationFrame(fAnimationId);
+            flappyLoop();
+        }
+
+        function flappyLoop() {
+            // Update
+            bird.velocity += bird.gravity;
+            bird.y += bird.velocity;
+
+            // Pipe spawning
+            if (fFrame % 100 === 0) {
+                let gap = 120;
+                let minTop = 40;
+                let maxTop = fCanvas.height - 150 - gap;
+                let topHeight = Math.floor(Math.random() * (maxTop - minTop + 1)) + minTop;
+
+                pipes.push({
+                    x: fCanvas.width,
+                    top: topHeight,
+                    bottom: fCanvas.height - topHeight - gap,
+                    passed: false
+                });
+            }
+
+            // Move pipes
+            for (let i = 0; i < pipes.length; i++) {
+                pipes[i].x -= 2;
+
+                // Collision detection
+                if (
+                    bird.x + bird.radius > pipes[i].x &&
+                    bird.x - bird.radius < pipes[i].x + 50 &&
+                    (bird.y - bird.radius < pipes[i].top || bird.y + bird.radius > fCanvas.height - pipes[i].bottom)
+                ) {
+                    fGameOver = true;
+                }
+
+                // Score tracking
+                if (pipes[i].x + 50 < bird.x && !pipes[i].passed) {
+                    pipes[i].passed = true;
+                    fScore++;
+                }
+            }
+
+            // Ground & Ceiling collision
+            if (bird.y + bird.radius >= fCanvas.height - 20 || bird.y - bird.radius <= 0) {
+                fGameOver = true;
+            }
+
+            // Remove offscreen pipes
+            if (pipes.length > 0 && pipes[0].x < -50) {
+                pipes.shift();
+            }
+
+            // Render
+            // Sky Background
+            fCtx.fillStyle = '#70c5ce';
+            fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+
+            // Draw Pipes
+            for (let i = 0; i < pipes.length; i++) {
+                fCtx.fillStyle = '#73bf2e';
+                fCtx.strokeStyle = '#538021';
+                fCtx.lineWidth = 3;
+
+                // Top Pipe
+                fCtx.fillRect(pipes[i].x, 0, 50, pipes[i].top);
+                fCtx.strokeRect(pipes[i].x, 0, 50, pipes[i].top);
+
+                // Bottom Pipe
+                fCtx.fillRect(pipes[i].x, fCanvas.height - pipes[i].bottom, 50, pipes[i].bottom);
+                fCtx.strokeRect(pipes[i].x, fCanvas.height - pipes[i].bottom, 50, pipes[i].bottom);
+            }
+
+            // Ground
+            fCtx.fillStyle = '#ded895';
+            fCtx.fillRect(0, fCanvas.height - 20, fCanvas.width, 20);
+            fCtx.fillStyle = '#73bf2e';
+            fCtx.fillRect(0, fCanvas.height - 20, fCanvas.width, 4);
+
+            // Draw Bird
+            fCtx.fillStyle = '#f4c430';
+            fCtx.beginPath();
+            fCtx.arc(bird.x, bird.y, bird.radius, 0, Math.PI * 2);
+            fCtx.fill();
+            fCtx.lineWidth = 2;
+            fCtx.strokeStyle = '#000';
+            fCtx.stroke();
+
+            // Bird Eye
+            fCtx.fillStyle = '#fff';
+            fCtx.beginPath();
+            fCtx.arc(bird.x + 4, bird.y - 4, 4, 0, Math.PI * 2);
+            fCtx.fill();
+            fCtx.fillStyle = '#000';
+            fCtx.beginPath();
+            fCtx.arc(bird.x + 5, bird.y - 4, 2, 0, Math.PI * 2);
+            fCtx.fill();
+
+            // Bird Beak
+            fCtx.fillStyle = '#ff5500';
+            fCtx.beginPath();
+            fCtx.fillRect(bird.x + 8, bird.y, 8, 5);
+
+            // Render Score
+            fCtx.fillStyle = '#ffffff';
+            fCtx.strokeStyle = '#000000';
+            fCtx.lineWidth = 3;
+            fCtx.font = 'bold 30px Arial';
+            fCtx.strokeText(fScore, fCanvas.width / 2 - 10, 50);
+            fCtx.fillText(fScore, fCanvas.width / 2 - 10, 50);
+
+            if (fGameOver) {
+                fCtx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                fCtx.fillRect(0, 0, fCanvas.width, fCanvas.height);
+
+                fCtx.fillStyle = '#ffffff';
+                fCtx.font = 'bold 24px Arial';
+                fCtx.fillText('GAME OVER', 85, 220);
+                fCtx.font = '16px Arial';
+                fCtx.fillText('Click or Space to restart', 70, 260);
+                return;
+            }
+
+            fFrame++;
+            fAnimationId = requestAnimationFrame(flappyLoop);
+        }
+
+        // --- 4. Chess Logic with Image Theme ---
         let chessBoard = null;
         let chessGame = new Chess();
 
@@ -456,7 +595,7 @@
             document.getElementById('chess-status').innerText = "Status: White's turn";
         }
 
-        // --- 4. Tic-Tac-Toe Logic ---
+        // --- 5. Tic-Tac-Toe Logic ---
         let tttBoard = ['', '', '', '', '', '', '', '', ''];
         let tttPlayer = 'X';
         let tttActive = true;
@@ -503,7 +642,7 @@
             document.querySelectorAll('.ttt-cell').forEach(c => c.innerText = '');
         }
 
-        // --- 5. Snake Game Logic ---
+        // --- 6. Snake Game Logic ---
         const canvas = document.getElementById('snakeCanvas');
         const ctx = canvas.getContext('2d');
         const grid = 20;
@@ -581,7 +720,7 @@
             alert("Game Over! Final Score: " + score);
         }
 
-        // Initialize Chess when loaded
+        // Initialize Chess on Page Load
         $(document).ready(function() {
             initChess();
         });
